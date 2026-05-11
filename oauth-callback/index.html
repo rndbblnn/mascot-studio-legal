@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mascot Studio — TikTok OAuth callback</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+body { font-family: system-ui, sans-serif; max-width: 40rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; }
+code, pre { background: #f4f4f4; padding: 0.15rem 0.4rem; border-radius: 4px; word-break: break-all; }
+pre { padding: 0.6rem; overflow: auto; }
+.row { margin: 1rem 0; }
+.muted { color: #666; font-size: 0.9em; }
+</style>
+</head>
+<body>
+<h1>Forwarding to local Mascot Studio…</h1>
+<p id="status">Sending the TikTok OAuth code to <code>http://localhost:3030/auth/tiktok/callback</code> on your machine. You should be redirected automatically.</p>
+
+<div class="row">
+  <p class="muted">If your browser doesn't redirect within 3 seconds, click here:</p>
+  <p><a id="manual-link" href="#">→ Continue to local Mascot Studio</a></p>
+</div>
+
+<details>
+  <summary class="muted">Auto-forward not working? (e.g. shim not running)</summary>
+  <div class="row">
+    <p>Make sure <code>publisher-oauth</code> is running locally:</p>
+    <pre>docker compose -f /home/abb/dev/openclaw1/docker-compose.override.yml up -d publisher-oauth
+curl http://localhost:3030/health</pre>
+    <p>If the shim is up but auto-forward still fails (browser blocks https → http), you can hit the local callback URL manually:</p>
+    <pre id="raw-url">(loading...)</pre>
+  </div>
+</details>
+
+<script>
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has("code") && !params.has("error")) {
+    document.getElementById("status").textContent =
+      "No OAuth code in URL. This page is the TikTok OAuth redirect target; visit /auth/tiktok/start on your local shim to begin.";
+    return;
+  }
+  const localUrl = "http://localhost:3030/auth/tiktok/callback?" + params.toString();
+  document.getElementById("manual-link").href = localUrl;
+  document.getElementById("raw-url").textContent = localUrl;
+  // 1.5s pause so the user briefly sees what's happening, then auto-redirect.
+  setTimeout(function () { window.location.href = localUrl; }, 1500);
+})();
+</script>
+</body>
+</html>
